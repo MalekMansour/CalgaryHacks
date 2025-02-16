@@ -15,8 +15,8 @@ if not API_KEY:
 # Google Cloud Vision API URL
 VISION_URL = f"https://vision.googleapis.com/v1/images:annotate?key={API_KEY}"
 
-# Wildlife-related labels
-WILDLIFE_CATEGORIES = {"animal", "plant", "tree", "bird", "mammal", "insect", "fish", "flower", "reptile", "amphibian"}
+# Wildlife-related labels (including more specific fish types as examples)
+WILDLIFE_CATEGORIES = {"cat", "dog", "tree", "bird", "rat", "giraffe", "fish", "flower", "elephant", "penguin", "clownfish", "shark", "salmon", "goldfish", "whale", "lion"}
 
 def recognize_image_google(image_path):
     """Send an image to Google Cloud Vision API for label detection."""
