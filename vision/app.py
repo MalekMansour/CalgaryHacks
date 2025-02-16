@@ -1,47 +1,42 @@
 import os
 import cv2
-import base64
 import requests
 from dotenv import load_dotenv
 
-# Load environment variables
+# Load API token
 load_dotenv()
+API_TOKEN = os.getenv('INATURALIST_API_TOKEN')
 
-# Get API key from .env file
-API_KEY = os.getenv('GOOGLE_CLOUD_VISION_API_KEY')
-if not API_KEY:
-    raise ValueError("API key not found. Please check the .env file and ensure 'GOOGLE_CLOUD_VISION_API_KEY' is set.")
+if not API_TOKEN:
+    raise ValueError("API token not found. Check your .env file.")
 
-# Google Cloud Vision API URL
-VISION_URL = f"https://vision.googleapis.com/v1/images:annotate?key={API_KEY}"
+# Correct iNaturalist API endpoint
+INATURALIST_URL = "https://api.inaturalist.org/v1/computervision/score_image"
 
-# Wildlife-related labels (including more specific fish types as examples)
-WILDLIFE_CATEGORIES = {"cat", "dog", "tree", "bird", "rat", "giraffe", "fish", "flower", "elephant", "penguin", "clownfish", "shark", "salmon", "goldfish", "whale", "lion"}
-
-def recognize_image_google(image_path):
-    """Send an image to Google Cloud Vision API for label detection."""
+def recognize_image_inaturalist(image_path):
+    """Send an image to iNaturalist for species recognition."""
     with open(image_path, "rb") as image_file:
-        image_data = image_file.read()
+        files = {"image": image_file}
+        headers = {"Authorization": f"Bearer {API_TOKEN}"}
 
-    # Encode image data in base64
-    encoded_image = base64.b64encode(image_data).decode('utf-8')
-
-    # Prepare the request payload
-    payload = {
-        "requests": [{
-            "image": {"content": encoded_image},
-            "features": [{"type": "LABEL_DETECTION", "maxResults": 5}]
-        }]
-    }
-
-    # Send the request
-    response = requests.post(VISION_URL, json=payload)
+        # Make the request
+        response = requests.post(INATURALIST_URL, headers=headers, files=files)
 
     if response.status_code != 200:
         print(f"Error: {response.status_code}, {response.text}")
-        return None
+        return "Wildlife not in our registry"
 
-    return response.json()
+    # Extract results
+    results = response.json().get("results", [])
+    if not results:
+        return "Wildlife not in our registry"
+
+    # Get species names
+    taxon = results[0].get("taxon", {})
+    common_name = taxon.get("preferred_common_name", "Unknown")
+    scientific_name = taxon.get("name", "Unknown")
+
+    return f"{common_name} ({scientific_name})"
 
 # Initialize the camera
 cap = cv2.VideoCapture(0)
@@ -51,47 +46,24 @@ while True:
     if not ret:
         break
 
-    # Mirror the camera
-    frame = cv2.flip(frame, 1)  
-
-    # Display the frame
+    frame = cv2.flip(frame, 1)
     cv2.imshow('Camera', frame)
 
-    # Check if 't' key is pressed to take a picture
     if cv2.waitKey(1) & 0xFF == ord('t'):
         image_path = "captured_image.jpg"
         cv2.imwrite(image_path, frame)
         print("Image Captured")
 
-        # Recognize the image
-        result = recognize_image_google(image_path)
-        
-        if result:
-            # Extract labels
-            labels = result.get('responses', [{}])[0].get('labelAnnotations', [])
-            recognized_labels = [label['description'].lower() for label in labels]
-            
-            # Check if the recognized labels belong to wildlife categories
-            wildlife_labels = [label for label in recognized_labels if any(category in label for category in WILDLIFE_CATEGORIES)]
-
-            if wildlife_labels:
-                recognized_text = f"Wildlife Detected: {', '.join(wildlife_labels)}"
-            else:
-                recognized_text = "Not a wildlife"
-        else:
-            recognized_text = "Recognition failed"
-
-        # Print result in terminal
+        # Recognize image
+        recognized_text = recognize_image_inaturalist(image_path)
         print(recognized_text)
 
-        # Display recognized text on the frame
+        # Display result
         font = cv2.FONT_HERSHEY_SIMPLEX
-        cv2.putText(frame, recognized_text, (10, 30), font, 1, (0, 255, 0), 2, cv2.LINE_AA)
+        cv2.putText(frame, recognized_text, (10, 30), font, 0.8, (0, 255, 0), 2, cv2.LINE_AA)
 
-    # Break the loop on 'q' key press
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
-# Release the camera and close all OpenCV windows
 cap.release()
 cv2.destroyAllWindows()
