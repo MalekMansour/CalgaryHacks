@@ -1,5 +1,6 @@
 import os
 import cv2
+import base64
 import requests
 from dotenv import load_dotenv
 
@@ -22,17 +23,20 @@ def recognize_image_google(image_path):
     with open(image_path, "rb") as image_file:
         image_data = image_file.read()
 
+    # Encode image data in base64
+    encoded_image = base64.b64encode(image_data).decode('utf-8')
+
     # Prepare the request payload
     payload = {
         "requests": [{
-            "image": {"content": image_data.decode("latin1")},
+            "image": {"content": encoded_image},
             "features": [{"type": "LABEL_DETECTION", "maxResults": 5}]
         }]
     }
 
     # Send the request
     response = requests.post(VISION_URL, json=payload)
-    
+
     if response.status_code != 200:
         print(f"Error: {response.status_code}, {response.text}")
         return None
