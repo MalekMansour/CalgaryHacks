@@ -1,0 +1,17 @@
+{
+  "name": "calgaryhacks",
+  "version": "1.0.0",
+  "description": "The Catchy App is a real-world wildlife identification and collection application, inspired by the concept of a Pokédex. Users can explore nature, capture photos of animals and plants, and have them recognized and logged into their personal registry. The app provides in-depth information about each species, including habitat, distribution, ecological impact, and conservation status.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "node-fetch": "^3.3.2"
+  }
+}
