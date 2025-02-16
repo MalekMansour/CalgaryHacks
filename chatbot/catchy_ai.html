@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap">
+  <title>Catchy AI</title>
+  <style>
+    body {
+        background: linear-gradient(to right, #E0F7E9, #D1F8D4); /* Soft light green gradient */
+        color: #2F4F4F; /* Dark green text for readability */
+        margin: 0;
+        padding: 0;
+        font-family: 'Lato', sans-serif;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+    }
+
+    #chat-container {
+        width: 400px;
+        height: 700px;
+        padding: 20px;
+        border: 5px solid;
+        border-image: linear-gradient(to right, #66BB6A, #388E3C) 1; /* Gradient border with green shades */
+        border-radius: 12px;
+        background-color: rgba(255, 255, 255, 0.9); /* White background with slight transparency */
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        overflow: hidden;
+    }
+
+    #category-bar {
+        background: #A5D6A7; /* Light green background */
+        border-radius: 12px;
+        display: flex;
+        overflow-x: auto;
+        white-space: nowrap;
+        margin-bottom: 10px;
+        -ms-overflow-style: none; 
+        scrollbar-width: none;  
+    }
+
+    .category-button {
+        background: none;
+        border: none;
+        color: #2F4F4F; /* Dark green text */
+        cursor: pointer;
+        font-size: 14px;
+        margin-right: 10px;
+        padding: 5px;
+        transition: color 0.3s ease;
+    }
+
+    .category-button:hover {
+        color: #388E3C; /* Darker green on hover */
+    }
+
+    #chat-log {
+        flex: 1;
+        overflow-y: auto;
+        margin-bottom: 10px;
+        padding-right: 10px;
+        -ms-overflow-style: none;  
+        scrollbar-width: none;  
+    }
+
+    #chat-log::-webkit-scrollbar,
+    #category-bar::-webkit-scrollbar {
+        display: none; 
+    }
+
+    input {
+        height: 40px;
+        width: calc(100%);
+        background: #C8E6C9; /* Light green input field */
+        color: #2F4F4F; /* Dark green text */
+        border: none;
+        border-radius: 4px;
+        margin-top: 10px;
+        padding: 10px;
+        box-sizing: border-box;
+        align-self: flex-end;
+        font-size: 14px;
+    }
+
+    button#send-button {
+        height: 40px;
+        background: #81C784; /* Soft green button */
+        color: #fff; /* White text */
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background 0.3s ease;
+        font-size: 14px;
+    }
+
+    button#send-button:hover {
+        background: #66BB6A; /* Slightly darker green on hover */
+    }
+
+    #cooldown-message,
+    #error-message,
+    #typing-indicator,
+    #welcome-message {
+        font-family: 'Lato', sans-serif;        
+        text-align: center;
+        font-size: 24px; 
+        color: #388E3C; /* Dark green message text */
+        margin-bottom: 20px; 
+    }
+
+    a {
+        color: #388E3C; /* Dark green links */
+        text-decoration: none; 
+    }
+
+    a:hover {
+        text-decoration: underline; 
+    }
+
+    @media (max-width: 600px) {
+        #chat-container {
+            max-width: 90%;
+        }
+    }
+</style>
+</head>
+<body>
+
+<div id="chat-container">
+        <div id="category-bar">
+            <button class="category-button" onclick="changePrompt('Climate Change')">Climate Change</button>
+            <button class="category-button" onclick="changePrompt('Mammals')">Mammals</button>
+            <button class="category-button" onclick="changePrompt('Reptiles')">Reptiles</button>
+            <button class="category-button" onclick="changePrompt('Habitats')">Habitats</button>
+            <button class="category-button" onclick="changePrompt('Ecosystem')">Ecosystem</button>
+            <button class="category-button" onclick="changePrompt('Endangered Species')">Endangered Species</button>
+            <button class="category-button" onclick="changePrompt('Invasive Species')">Invasive Species</button>
+            <button class="category-button" onclick="changePrompt('Plants')">Plants</button>
+            <button class="category-button" onclick="changePrompt('Forest Conservation')">Forest Conservation</button>
+            <button class="category-button" onclick="changePrompt('Ocean Conservation')">Ocean Conservation</button>
+            <button class="category-button" onclick="changePrompt('Pollution')">Pollution</button>
+            <button class="category-button" onclick="changePrompt('Biodiversity')">Biodiversity</button>
+            <button class="category-button" onclick="changePrompt('Wildlife Protection')">Wildlife Protection</button>
+            <button class="category-button" onclick="changePrompt('Sustainable Agriculture')">Sustainable Agriculture</button>
+        </div>
+    
+  <div id="welcome-message">How can I help you discover wildlife today?</div>
+  <div id="chat-log"></div>
+  <div id="typing-indicator"></div>
+  <input type="text" id="user-input" placeholder="Type your message...">
+  <button id="send-button" onclick="sendMessage()">Send</button>
+</div>
+
+<script>
+  const openaiApiKey = "API_KEY";
+  const messages = [];
+  const chatLog = document.getElementById("chat-log");
+  const userInput = document.getElementById("user-input");
+  const typingIndicator = document.getElementById("typing-indicator");
+
+  const systemMsg = `You are the Catchy AI Assistant. 
+  Catchy is a wildlife identification and collection app, inspired by a Pokédex. 
+  Your role is to help users learn about animals and plants, their habitats, distribution, ecological impact, and conservation status. 
+  Users can take photos of animals and plants, which you will identify and add to their registry. 
+  Provide short, accurate descriptions of each species, and give links to official information, where possible.
+  Always include relevant links for further reading, such as from trusted wildlife organizations or government agencies.
+  Make your answers short, around 2-3 sentences but include all the necessary information. You also always need to refer the user to
+  an important link for further reading. Use wikipedia, national geographic, or any other trusted source.`;
+
+  messages.push({ "role": "system", "content": systemMsg });
+
+  function updateChatLog() {
+    chatLog.innerHTML = messages
+      .filter(msg => msg.role !== "system")  
+      .map(msg => `<p><strong>${msg.role}:</strong> ${makeLinksClickable(msg.content)}</p>`)
+      .join('');
+  }
+
+  function removePeriodFromUrl(url) {
+    return url.endsWith('.') ? url.slice(0, -1) : url;
+  }
+
+  function validateUrl(url) {
+    const regex = /^(https?:\/\/[^\s/$.?#].[^\s]*)$/i;
+    return regex.test(url);
+  }
+
+  function makeLinksClickable(content) {
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    return content.replace(urlRegex, (url) => {
+        const cleanedUrl = removePeriodFromUrl(url);
+        if (validateUrl(cleanedUrl)) {
+            // Remove any trailing punctuation (like ) or .) from the URL
+            const finalUrl = cleanedUrl.replace(/[.,;?!)]$/, '');
+            return `<a href="#" onclick="window.open('${finalUrl}', '_blank'); return false;">${finalUrl}</a>`;
+        } else {
+            return cleanedUrl; 
+        }
+    });
+}
+
+  function changePrompt(category) {
+    const userInput = document.getElementById("user-input");
+    userInput.value = `Tell me about ${category}.`;
+  }
+
+  function showTypingIndicator() {
+    typingIndicator.innerText = "Catchy AI is typing...";
+  }
+
+  function hideTypingIndicator() {
+    typingIndicator.innerText = "";
+  }
+
+  function sendMessage() {
+    const userMessage = userInput.value;
+    messages.push({ "role": "user", "content": userMessage });
+
+    showTypingIndicator();
+
+    fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${openaiApiKey}`
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        messages: messages
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      const assistantReply = data.choices[0].message.content;
+      messages.push({ "role": "assistant", "content": assistantReply });
+
+      hideTypingIndicator();
+      updateChatLog();
+    })
+    .catch(error => console.error("Error:", error));
+
+    userInput.value = "";
+  }
+
+  updateChatLog();
+</script>
+</body>
+</html>
