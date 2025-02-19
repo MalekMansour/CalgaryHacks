@@ -70,3 +70,9 @@ The Catchy App is an engaging and educational way for users to explore nature, l
 5. **Figma**: UI/UX design and prototyping.
 6. **OpenAI**: Advanced AI capabilities for species identification.
 
+## Authors
+Malek
+Marybeth
+Trisha
+Suhee
+CJ
