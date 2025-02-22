@@ -2,7 +2,6 @@ import os
 import requests
 from dotenv import load_dotenv
 
-# Load API token from .env file
 load_dotenv()
 API_TOKEN = os.getenv('INATURALIST_API_TOKEN')
 
