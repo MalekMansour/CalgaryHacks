@@ -8,7 +8,6 @@ API_TOKEN = os.getenv('INATURALIST_API_TOKEN')
 if not API_TOKEN:
     raise ValueError("API token not found. Check your .env file.")
 
-# iNaturalist API test endpoint
 INATURALIST_URL = "https://api.inaturalist.org/v1/computervision/score_image"
 
 def test_api_connection():
