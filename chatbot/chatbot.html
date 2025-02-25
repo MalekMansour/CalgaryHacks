@@ -81,7 +81,7 @@
             const simpleResponses = ['hi', 'hello', 'hey', 'howdy'];
             if (simpleResponses.includes(userMessage.toLowerCase().trim())) {
                 addMessage('Hello! How can I assist you today?', 'bot');
-                return; // Early return to avoid sending a request to the API
+                return;
             }
 
             try {
