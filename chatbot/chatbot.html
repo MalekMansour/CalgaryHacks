@@ -77,7 +77,6 @@
         async function getBotResponse(userMessage) {
             addMessage('Thinking...', 'bot');
 
-            // Handle simple greetings
             const simpleResponses = ['hi', 'hello', 'hey', 'howdy'];
             if (simpleResponses.includes(userMessage.toLowerCase().trim())) {
                 addMessage('Hello! How can I assist you today?', 'bot');
@@ -111,11 +110,11 @@
                 }
 
                 const botMessage = data.choices[0].text.trim();
-                chatBox.removeChild(chatBox.lastChild); // Remove 'Thinking...' message
+                chatBox.removeChild(chatBox.lastChild);
                 addMessage(botMessage, 'bot');
             } catch (error) {
                 console.error('Error fetching bot response:', error);
-                chatBox.removeChild(chatBox.lastChild); // Remove 'Thinking...' message
+                chatBox.removeChild(chatBox.lastChild); 
                 addMessage('Sorry, I couldn’t process that. Please try again or rephrase your query.', 'bot');
             }
         }
